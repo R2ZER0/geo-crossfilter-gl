@@ -9,28 +9,26 @@ attribute vec2 position;
 
 varying vec3 featIdVec;
 
-#define FEATID_FACTOR 16.0
+#define FEATID_LIMIT 1024
 
 void main() {
     // Convert our position from -1.0..1.0  to 0.0..1.0
     // Convert texture output 0.0-1.0 to scale 0-FEATID_FACTOR
     vec2 texturePosition = (position + 1.0) / 2.0;
-    float featId = texture2D(layer, texturePosition).r * FEATID_FACTOR;
     float overlap = texture2D(overlap, texturePosition).r;
 
-    // If "overlap" is 0, then move the point off screen
-    //float discardOffset = (1.0 - overlap) * 10.0;
+    featIdVec = texture2D(layer, texturePosition).xyz;
 
-    // Scale integer 0-16 into range -1.0...+1.0
-    float featLocation = ((featId / FEATID_FACTOR) * 2.0) - 1.0;
+    int featId = int(featIdVec.x * 255.0) + int(featIdVec.y * 255.0 * 255.0) + int(featIdVec.z * 255.0 * 255.0 * 255.0);
+
+
+
+    // Scale integer into range -1.0...+1.0
+    float featLocation = ((float(featId) / float(FEATID_LIMIT)) * 2.0) - 1.0;
 
     if (overlap > 0.0) {
         gl_Position = vec4(featLocation, 0.0, 0.0, 1.0);
     } else {
-        gl_Position = vec4(2.0, 0.0, 0.0, 1.0);
+        gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
     }
-
-    //gl_Position = vec4(texturePosition, 0.0, 1.0);
-    gl_PointSize = 1.0;
-
 }

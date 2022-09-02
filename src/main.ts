@@ -7,7 +7,8 @@ import shaderOverlapFrag from './shaders/overlap.frag';
 import shaderLookupVert from './shaders/lookup.vert';
 import shaderLookupFrag from './shaders/lookup.frag';
 
-const FEATID_LIMIT = 16; // Theoretical max 255*255*255
+const FEATID_LIMIT = 1024; // Theoretical max 255*255*255, but any more than 2048 needs 2D
+const SAMPLE_SIZE = 512;
 
 // Calling the regl module with no arguments creates a full screen canvas and
 // WebGL context, and then uses this context to initialize a new REGL instance
@@ -35,7 +36,7 @@ const drawLayer = regl({
         //position: regl.buffer(triCoords(100, 110, 100)),
         // regl automatically infers sane defaults for the vertex attribute pointers
         featid: regl.buffer([
-            [1, 1, 1],
+            [2, 2, 2],
         ])
     },
 
@@ -98,7 +99,6 @@ const drawOverlap = regl({
 });
 
 const pointsGrid = (size: number) => {
-    //let buf = regl.buffer(size * size * 2);
     let arr = new Float32Array(size * size * 2);
     for (let y = 0; y < size; ++y) {
         for (let x = 0; x < size; ++x) {
@@ -107,7 +107,6 @@ const pointsGrid = (size: number) => {
             arr[arrPos + 1] = (y / size) * 2.0 - 1.0;
         }
     }
-    console.log(arr);
     return arr;
 };
 
@@ -116,9 +115,9 @@ const drawFeatLookup = regl({
     frag: shaderLookupFrag,
 
     attributes: {
-        position: regl.buffer(pointsGrid(512))
+        position: regl.buffer(pointsGrid(SAMPLE_SIZE))
     },
-    count: 512*512,
+    count: SAMPLE_SIZE*SAMPLE_SIZE,
     primitive: "points",
 
     uniforms: {
@@ -138,11 +137,11 @@ const drawFeatLookup = regl({
 });
 
 
-const tex1 = regl.texture({ width: 512, height: 512 });
-const tex2 = regl.texture({ width: 512, height: 512 });
-const tex3 = regl.texture({ width: 512, height: 512 });
-const texOverlap = regl.texture({ width: 512, height: 512 });
-const texFeatLookup = regl.texture({ width: 16, height: 1 });
+const tex1 = regl.texture({ width: SAMPLE_SIZE, height: SAMPLE_SIZE});
+const tex2 = regl.texture({ width: SAMPLE_SIZE, height: SAMPLE_SIZE});
+const tex3 = regl.texture({ width: SAMPLE_SIZE, height: SAMPLE_SIZE});
+const texOverlap = regl.texture({ width: SAMPLE_SIZE, height: SAMPLE_SIZE});
+const texFeatLookup = regl.texture({ width: FEATID_LIMIT, height: 1 });
 
 const fbo1 = regl.framebuffer({ color: tex1, depth: false, stencil: false });
 const fbo2 = regl.framebuffer({ color: tex2, depth: false, stencil: false });
