@@ -9,7 +9,7 @@ attribute vec2 position;
 
 varying vec3 featIdVec;
 
-#define FEATID_LIMIT 1024
+#define FEATID_LIMIT 128
 
 void main() {
     // Convert our position from -1.0..1.0  to 0.0..1.0
