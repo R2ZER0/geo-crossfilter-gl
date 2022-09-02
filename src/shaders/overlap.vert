@@ -1,7 +1,6 @@
-precision mediump float;
+#version 100
 
-uniform sampler2D layer1;
-uniform sampler2D layer2;
+precision mediump float;
 
 attribute vec2 position;
 
