@@ -4,4 +4,5 @@ export default {
     plugins: [
         glslify()
     ],
+    assetsInclude: ['**/*.pbf'],
 }
