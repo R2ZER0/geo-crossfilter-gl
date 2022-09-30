@@ -14,27 +14,28 @@ const regl = createRegl({
 });
 
 type DrawPolyProps = {
-  vertices: Point[];
-  triangles: number[][];
-  featid: number;
+  vertices: Float32Array;
+  featids: Float32Array;
+  triangles: Uint32Array;
+  size: number;
   renderTarget: Framebuffer2D | null;
 };
 
-const drawPoly = (poly: PolyData, extent: number) =>
+const drawPoly =
   regl({
     attributes: {
-      position: poly.vertices,
-      featid: poly.featids,
+      position: regl.prop('vertices'),
+      featid: regl.prop('featids'),
     },
     
-    elements: regl.elements({
+    elements: (_context, props: DrawPolyProps, _batchId) => regl.elements({
       primitive: "triangles",
-      data: poly.triangles,
+      data: props.triangles,
       type: "uint32",
     }),
 
     uniforms: {
-      extent: extent,
+      size: regl.prop('size'),
     },
 
     blend: {
@@ -61,17 +62,13 @@ const main = async () => {
 
   console.log(data.attributes);
 
-  drawPoly(data.attributes, data.extent)();
+  drawPoly({
+    "vertices": data.attributes.vertices,
+    "featids": data.attributes.featids,
+    "triangles": data.attributes.triangles,
+    "size": data.extent,
+  });
 
-  // data.features.forEach(feat => {
-  //   let poly = feat.poly;
-
-  //   console.log("Poly", poly);
-  //   let drawPolyCmd = drawPoly(poly, data.extent);
-
-  //   drawPolyCmd();
-
-  // });
 };
 
 main().catch(error => console.error('Main Error', error)).then(() => console.log("main complete"));
