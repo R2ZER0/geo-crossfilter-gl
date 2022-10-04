@@ -1,8 +1,10 @@
-import createRegl, { Regl } from "regl";
+import createRegl, { Cancellable, Regl } from "regl";
 
 import { loadMvtData, MvtData, MvtFeature } from "./mvt";
 import { LayerGL } from "./drawLayer";
 import { OverlapGL } from "./drawOverlap";
+import { LookupGL } from "./drawLookup";
+import { FEATID_LIMIT } from "./constants";
 
 // TODO: Use loaders.gl's MVTLoader instead of this custom thing
 
@@ -25,8 +27,8 @@ let rangeMaxInput2 = document.getElementById("range-max-2");
 
 const getFilterRanges = () => {
   return {
-    "layer1": [parseFloat(rangeMinInput1.value), parseFloat(rangeMaxInput1.value)] as [number, number],
-    "layer2": [parseFloat(rangeMinInput2.value), parseFloat(rangeMaxInput2.value)] as [number, number],
+    "layer1": [parseFloat(rangeMinInput1?.value), parseFloat(rangeMaxInput1?.value)] as [number, number],
+    "layer2": [parseFloat(rangeMinInput2?.value), parseFloat(rangeMaxInput2?.value)] as [number, number],
   };
 }
 
@@ -101,6 +103,73 @@ const setupCanvasOverlap = ({data1, data2}: SetupContext) => {
   };
 
   regl.frame(draw);
+};
+
+
+const setupCanvasCrossfilter = ({data1, data2}: SetupContext) => {
+  const regl = initRegl("#canvasLookup");
+
+  let layer1 = initLayer(regl, data1, "households");
+  let layer2 = initLayer(regl, data2, "Children in low income families: total");
+  let overlap = new OverlapGL(regl, false, layer1.texture, layer2.texture, SAMPLE_SIZE);
+  let lookup1 = new LookupGL(regl, false, layer1.texture, overlap.texture, SAMPLE_SIZE);
+  let lookup2 = new LookupGL(regl, false, layer2.texture, overlap.texture, SAMPLE_SIZE);
+
+  const lookupInfoDiv = document.getElementById('lookup-info');
+
+  const draw = () => {
+    regl.clear({
+      color: [0, 0, 0, 1],
+    });
+
+    layer1.draw({
+      filterRange: getFilterRanges().layer1,
+      toViewport: false,
+    });
+    
+    layer2.draw({
+      filterRange: getFilterRanges().layer2,
+      toViewport: false,
+    });
+
+    overlap.draw({});
+
+    lookup1.draw();
+    lookup2.draw();
+
+    let found1 = 0;
+    let found2 = 0;
+    
+    regl({ framebuffer: lookup1.framebuffer })(() => {
+      let pixels = regl.read({
+        x: 0,
+        y: 0,
+        width: FEATID_LIMIT,
+        height: 1,
+        data: new Uint8Array(4 * FEATID_LIMIT),
+      });
+
+      found1 = pixels.filter((val) => val > 254).length;
+    });
+   
+    regl({ framebuffer: lookup2.framebuffer })(() => {
+      let pixels = regl.read({
+        x: 0,
+        y: 0,
+        width: FEATID_LIMIT,
+        height: 1,
+        data: new Uint8Array(4 * FEATID_LIMIT),
+      });
+
+      found2 = pixels.filter((val) => val > 254).length;
+    });
+
+    if(lookupInfoDiv) {
+      lookupInfoDiv.innerHTML = `Layer1: ${found1} features<br/>Layer2: ${found2} features`;
+    }
+  };
+
+  regl.frame(draw);
 
 };
 
@@ -115,11 +184,11 @@ const main = async () => {
   // We have to use seperate insances of everything for each canvas
   // because we can't share textures between canvases/GL instances
   // (Or can we? how?)
-  //
 
   setupCanvasLayer1(context);
   setupCanvasLayer2(context);
   setupCanvasOverlap(context);
+  setupCanvasCrossfilter(context); // headless
 
 };
 

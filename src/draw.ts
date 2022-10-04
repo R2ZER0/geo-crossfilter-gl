@@ -1,8 +1,6 @@
 
 import shaderLayerVert from "./shaders/draw.vert";
 import shaderLayerFrag from "./shaders/draw.frag";
-import shaderLookupVert from "./shaders/lookup.vert";
-import shaderLookupFrag from "./shaders/lookup.frag";
 
 
 const FEATID_LIMIT = 128; // Theoretical max 255*255*255, but any more than 2048 needs 2D
@@ -14,17 +12,6 @@ const triCoords = (x: number, y: number, scale: number) => [
   [x + 0.8 * scale, y - 0.39 * scale],
 ];
 
-const pointsGrid = (size: number) => {
-    let arr = new Float32Array(size * size * 2);
-    for (let y = 0; y < size; ++y) {
-    for (let x = 0; x < size; ++x) {
-        let arrPos = (size * y + x) * 2;
-        arr[arrPos + 0] = (x / size) * 2.0 - 1.0;
-        arr[arrPos + 1] = (y / size) * 2.0 - 1.0;
-    }
-    }
-    return arr;
-};
 
 const layerAttrs = {
   attributes: {
@@ -62,31 +49,6 @@ const drawLayer = regl({
 });
 
 
-const drawFeatLookup = regl({
-  vert: shaderLookupVert,
-  frag: shaderLookupFrag,
-
-  attributes: {
-    position: regl.buffer(pointsGrid(SAMPLE_SIZE)),
-  },
-  count: SAMPLE_SIZE * SAMPLE_SIZE,
-  primitive: "points",
-
-  uniforms: {
-    overlap: regl.prop("overlap"),
-    layer: regl.prop("layer"),
-  },
-
-  blend: {
-    enable: false,
-  },
-
-  depth: {
-    enable: false,
-  },
-
-  framebuffer: (_context, props, _bactchId) => props.renderTarget,
-});
 
 const drawLayerFiltered = regl({
   ...layerAttrs,
