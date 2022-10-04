@@ -5,6 +5,7 @@ import { LayerGL } from "./drawLayer";
 import { OverlapGL } from "./drawOverlap";
 import { LookupGL } from "./drawLookup";
 import { FEATID_LIMIT } from "./constants";
+import { CrossfilterGL } from "./drawCrossfilter";
 
 // TODO: Use loaders.gl's MVTLoader instead of this custom thing
 
@@ -106,14 +107,17 @@ const setupCanvasOverlap = ({data1, data2}: SetupContext) => {
 };
 
 
-const setupCanvasCrossfilter = ({data1, data2}: SetupContext) => {
-  const regl = initRegl("#canvasLookup");
+const setupCanvasCrossfilter = ({data1, data2}: SetupContext, layer: number) => {
+  const regl = initRegl(`#canvasCrossfilter${layer}`);
 
   let layer1 = initLayer(regl, data1, "households");
   let layer2 = initLayer(regl, data2, "Children in low income families: total");
   let overlap = new OverlapGL(regl, false, layer1.texture, layer2.texture, SAMPLE_SIZE);
   let lookup1 = new LookupGL(regl, false, layer1.texture, overlap.texture, SAMPLE_SIZE);
   let lookup2 = new LookupGL(regl, false, layer2.texture, overlap.texture, SAMPLE_SIZE);
+
+  let crossfilter1 = new CrossfilterGL(regl, data1, lookup1.texture, SAMPLE_SIZE);
+  let crossfilter2 = new CrossfilterGL(regl, data2, lookup2.texture, SAMPLE_SIZE);
 
   const lookupInfoDiv = document.getElementById('lookup-info');
 
@@ -122,6 +126,7 @@ const setupCanvasCrossfilter = ({data1, data2}: SetupContext) => {
       color: [0, 0, 0, 1],
     });
 
+    // Render Layers
     layer1.draw({
       filterRange: getFilterRanges().layer1,
       toViewport: false,
@@ -132,14 +137,24 @@ const setupCanvasCrossfilter = ({data1, data2}: SetupContext) => {
       toViewport: false,
     });
 
+    // Render Overlap
     overlap.draw({});
 
+    // Render Overlap Lookup Indexes
     lookup1.draw();
     lookup2.draw();
 
     let found1 = 0;
     let found2 = 0;
-    
+
+    // Render Crossfilter
+    if(layer < 2) {
+      crossfilter1.draw();
+    } else {
+      crossfilter2.draw();
+    }
+
+    // Extract Lookup table info
     regl({ framebuffer: lookup1.framebuffer })(() => {
       let pixels = regl.read({
         x: 0,
@@ -149,7 +164,8 @@ const setupCanvasCrossfilter = ({data1, data2}: SetupContext) => {
         data: new Uint8Array(4 * FEATID_LIMIT),
       });
 
-      found1 = pixels.filter((val) => val > 254).length;
+      // Only test Alpha values
+      found1 = pixels.filter((value, i) => ((i - 3) % 4 === 0) && value === 255).length;
     });
    
     regl({ framebuffer: lookup2.framebuffer })(() => {
@@ -161,7 +177,8 @@ const setupCanvasCrossfilter = ({data1, data2}: SetupContext) => {
         data: new Uint8Array(4 * FEATID_LIMIT),
       });
 
-      found2 = pixels.filter((val) => val > 254).length;
+      // Only test Alpha values
+      found2 = pixels.filter((value, i) => ((i - 3) % 4 === 0) && value === 255).length;
     });
 
     if(lookupInfoDiv) {
@@ -188,7 +205,8 @@ const main = async () => {
   setupCanvasLayer1(context);
   setupCanvasLayer2(context);
   setupCanvasOverlap(context);
-  setupCanvasCrossfilter(context); // headless
+  setupCanvasCrossfilter(context, 1);
+  setupCanvasCrossfilter(context, 2);
 
 };
 

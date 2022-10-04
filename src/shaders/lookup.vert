@@ -13,7 +13,7 @@ varying vec3 featIdVec;
 
 void main() {
     // Convert our position from -1.0..1.0  to 0.0..1.0
-    // Convert texture output 0.0-1.0 to scale 0-FEATID_FACTOR
+    // Convert texture output 0.0-1.0 to scale 0-FEATID_LIMIT
     vec2 texturePosition = (position + 1.0) / 2.0;
     float overlap = texture2D(overlap, texturePosition).r;
 
