@@ -8,7 +8,109 @@
     <title>XF GL</title>
   </head>
   <body>
-    <div id="container"></div>
+    <div class="flex flex-col">
+      <div class="flex flex-row">
+        <div class="canvas-container" id="canvasLayer1"></div>
+        <div class="canvas-container" id="canvasOverlap"></div>
+        <div class="canvas-container" id="canvasLayer2"></div>
+      </div>
+      <div id="controls">
+        <!-- Households: Range Slider from https://www.tailwindcsscomponent.com/range-slider-1 -->
+        <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
+        
+        <div class="flex flex-col items-center" x-data="rangeSlider(0, 300000, 0, 300000)">
+            <input id="range-min-1" class="absolute opacity-0 pointer-events-none" 
+                type="range" name="age_min" min="0" max="300000" :value="min">
+            <input id="range-max-1" class="absolute opacity-0 pointer-events-none" 
+                type="range" name="age_max" min="0" max="300000" :value="max">
+        
+            <span x-text="`Households ${min} to ${max}`"></span>
+        
+            <div class="flex items-center relative rounded bg-gray-300 w-40 h-2 mt-4" 
+                x-ref="sliderEl" 
+                @mouseup.window="dragLeft = dragRight = false" 
+                @mousemove.window="handleThumbMouseMove($event)" 
+                style="user-select: none"
+            >
+                <div class="absolute h-2 bg-blue-400" 
+                    :style="`left: ${(min - rangeMin) * 100 / range}%; right: ${100 - (max - rangeMin) * 100 / range}%`"></div>
+                <div class="w-4 h-4 -ml-2 rounded-full bg-blue-500 absolute cursor-pointer" 
+                    @mousedown="dragLeft = true" 
+                    :style="`left: ${(min - rangeMin) * 100 / range}%`" 
+                    x-ref="minThumb"></div>
+                <div class="w-4 h-4 -ml-2 rounded-full bg-blue-500 absolute cursor-pointer" 
+                    @mousedown="dragRight = true" 
+                    :style="`left: ${(max - rangeMin) * 100 / range}%`" 
+                    x-ref="maxThumb"></div>
+            </div>
+        </div>
+        
+        <script>
+        function rangeSlider(rangeMin, rangeMax, min, max) {
+            return {
+                range: rangeMax - rangeMin,
+                rangeMin,
+                rangeMax,
+                min,
+                max,
+                dragLeft: false,
+                dragRight: false,
+                
+                handleThumbMouseMove: function(e) {
+                    if (!this.dragLeft && !this.dragRight) return;
+        
+                    const thumbEl = this.dragLeft ? this.$refs.minThumb : this.$refs.maxThumb;
+                    
+                    const sliderRect = this.$refs.sliderEl.getBoundingClientRect();
+                    
+                    let r = (e.clientX - sliderRect.left) / sliderRect.width;
+                    r = Math.max(0, Math.min(r, 1));
+                    const value = Math.floor(r * this.range + this.rangeMin);
+        
+                    if (this.dragLeft) {
+                        this.min = value;
+                        this.max = Math.max(this.min, this.max);
+                    } else {
+                        this.max = value;
+                        this.min = Math.min(this.min, this.max);
+                    }
+                }
+            };
+        }
+        </script>
+        <!-- end range slider -->
+        <!-- Children in Poverty: Range Slider from https://www.tailwindcsscomponent.com/range-slider-1 -->
+        <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
+        
+        <div class="flex flex-col items-center" x-data="rangeSlider(0, 30000, 0, 30000)">
+            <input id="range-min-2" class="absolute opacity-0 pointer-events-none" 
+                type="range" name="age_min" min="0" max="30000" :value="min">
+            <input id="range-max-2" class="absolute opacity-0 pointer-events-none" 
+                type="range" name="age_max" min="0" max="30000" :value="max">
+        
+            <span x-text="`Households with Children in Poverty ${min} to ${max}`"></span>
+        
+            <div class="flex items-center relative rounded bg-gray-300 w-40 h-2 mt-4" 
+                x-ref="sliderEl" 
+                @mouseup.window="dragLeft = dragRight = false" 
+                @mousemove.window="handleThumbMouseMove($event)" 
+                style="user-select: none"
+            >
+                <div class="absolute h-2 bg-blue-400" 
+                    :style="`left: ${(min - rangeMin) * 100 / range}%; right: ${100 - (max - rangeMin) * 100 / range}%`"></div>
+                <div class="w-4 h-4 -ml-2 rounded-full bg-blue-500 absolute cursor-pointer" 
+                    @mousedown="dragLeft = true" 
+                    :style="`left: ${(min - rangeMin) * 100 / range}%`" 
+                    x-ref="minThumb"></div>
+                <div class="w-4 h-4 -ml-2 rounded-full bg-blue-500 absolute cursor-pointer" 
+                    @mousedown="dragRight = true" 
+                    :style="`left: ${(max - rangeMin) * 100 / range}%`" 
+                    x-ref="maxThumb"></div>
+            </div>
+        <!-- end range slider -->
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

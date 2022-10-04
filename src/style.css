@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -37,7 +41,7 @@ h1 {
   line-height: 1.1;
 }
 
-#container {
+.canvas-container {
     width: 512px;
     height: 512px;
 }

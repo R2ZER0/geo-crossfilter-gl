@@ -1,8 +1,6 @@
 
 import shaderLayerVert from "./shaders/draw.vert";
 import shaderLayerFrag from "./shaders/draw.frag";
-import shaderOverlapVert from "./shaders/overlap.vert";
-import shaderOverlapFrag from "./shaders/overlap.frag";
 import shaderLookupVert from "./shaders/lookup.vert";
 import shaderLookupFrag from "./shaders/lookup.frag";
 
@@ -15,6 +13,18 @@ const triCoords = (x: number, y: number, scale: number) => [
   [x - 0.8 * scale, y - 0.39 * scale],
   [x + 0.8 * scale, y - 0.39 * scale],
 ];
+
+const pointsGrid = (size: number) => {
+    let arr = new Float32Array(size * size * 2);
+    for (let y = 0; y < size; ++y) {
+    for (let x = 0; x < size; ++x) {
+        let arrPos = (size * y + x) * 2;
+        arr[arrPos + 0] = (x / size) * 2.0 - 1.0;
+        arr[arrPos + 1] = (y / size) * 2.0 - 1.0;
+    }
+    }
+    return arr;
+};
 
 const layerAttrs = {
   attributes: {
@@ -51,52 +61,6 @@ const drawLayer = regl({
   framebuffer: (_context, props, _bactchId) => props.renderTarget,
 });
 
-const drawOverlap = regl({
-  vert: shaderOverlapVert,
-  frag: shaderOverlapFrag,
-
-  attributes: {
-    position: regl.buffer([
-      [-1, 1],
-      [-1, -1],
-      [1, -1],
-      [1, -1],
-      [1, 1],
-      [-1, 1],
-    ]),
-  },
-  count: 6,
-
-  uniforms: {
-    width: regl.context("viewportWidth"),
-    height: regl.context("viewportHeight"),
-    layer1: regl.prop("layer1"),
-    layer2: regl.prop("layer2"),
-    layer3: regl.prop("layer3"),
-  },
-
-  blend: {
-    enable: false,
-  },
-
-  depth: {
-    enable: false,
-  },
-
-  framebuffer: (_context, props, _bactchId) => props.renderTarget,
-});
-
-const pointsGrid = (size: number) => {
-  let arr = new Float32Array(size * size * 2);
-  for (let y = 0; y < size; ++y) {
-    for (let x = 0; x < size; ++x) {
-      let arrPos = (size * y + x) * 2;
-      arr[arrPos + 0] = (x / size) * 2.0 - 1.0;
-      arr[arrPos + 1] = (y / size) * 2.0 - 1.0;
-    }
-  }
-  return arr;
-};
 
 const drawFeatLookup = regl({
   vert: shaderLookupVert,
