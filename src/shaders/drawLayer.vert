@@ -11,17 +11,13 @@ attribute float featid;
 attribute float filterValue;
 
 varying float v_featid;
+varying float v_visible;
 
 void main() {
   v_featid = featid;
 
-  if (filterValue < filterMin || filterValue > filterMax) {
-    // If this vertex is outside the filter range, discard it
-    // by moving it outside of clip space.
-    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+  // If this vertex is outside the filter range, dont display it
+  v_visible = (filterValue < filterMin || filterValue > filterMax) ? 0.0 : 1.0;
 
-  } else {
-    // Passed the filter, keep this vertex
-    gl_Position = vec4((position / size) * 2.0 - 1.0, 0.0, 1.0);
-  }
+  gl_Position = vec4((position / size) * 2.0 - 1.0, 0.0, 1.0);
 }
