@@ -1,4 +1,4 @@
-import createRegl, { Cancellable, Regl } from "regl";
+import createRegl, { Cancellable, DefaultContext, Regl } from "regl";
 
 import { loadMvtData, MvtData, MvtFeature } from "./mvt";
 import { LayerGL } from "./drawLayer";
@@ -11,9 +11,12 @@ import { CrossfilterGL } from "./drawCrossfilter";
 
 const SAMPLE_SIZE = 512;
 
-const MVT1_URL = "https://astrosat-testing-public.s3.dualstack.eu-west-1.amazonaws.com/astrosat/lad_2019_gb_childpov2019_breakdown_raw__mvt/7/62/39.pbf";
-const MVT2_URL = "https://astrosat-testing-public.s3.dualstack.eu-west-1.amazonaws.com/astrosat/lad_2019_gb_childpov2019_breakdown_raw__mvt/7/63/40.pbf";
-  
+//const MVT1_URL = "https://astrosat-testing-public.s3.dualstack.eu-west-1.amazonaws.com/astrosat/lad_2019_gb_childpov2019_breakdown_raw__mvt/7/62/39.pbf";
+//const MVT2_URL = "https://astrosat-testing-public.s3.dualstack.eu-west-1.amazonaws.com/astrosat/lad_2019_gb_childpov2019_breakdown_raw__mvt/7/63/40.pbf";
+import MVT1_URL from "./data/layer1.pbf?url";
+import MVT2_URL from "./data/layer2.pbf?url";
+
+
 let initLayer = (regl: Regl, data: MvtData, propName: string) => new LayerGL(regl, {
   data, 
   getFilterValue: (feat: MvtFeature) => feat.properties[propName] as number,
@@ -121,7 +124,7 @@ const setupCanvasCrossfilter = ({data1, data2}: SetupContext, layer: number) => 
 
   const lookupInfoDiv = document.getElementById('lookup-info');
 
-  const draw = () => {
+  const draw = ({tick}: DefaultContext) => {
     regl.clear({
       color: [0, 0, 0, 1],
     });
@@ -154,35 +157,39 @@ const setupCanvasCrossfilter = ({data1, data2}: SetupContext, layer: number) => 
       crossfilter2.draw();
     }
 
-    // Extract Lookup table info
-    regl({ framebuffer: lookup1.framebuffer })(() => {
-      let pixels = regl.read({
-        x: 0,
-        y: 0,
-        width: FEATID_LIMIT,
-        height: 1,
-        data: new Uint8Array(4 * FEATID_LIMIT),
+    if(tick % 16 === 0) {
+      // Extract Lookup table info
+      regl({ framebuffer: lookup1.framebuffer })(() => {
+        let pixels = regl.read({
+          x: 0,
+          y: 0,
+          width: FEATID_LIMIT,
+          height: 1,
+          data: new Uint8Array(4 * FEATID_LIMIT),
+        });
+
+        // Only test Alpha values
+        found1 = pixels.filter((value, i) => ((i - 3) % 4 === 0) && value === 255).length;
+        window._features1 = pixels; //.filter((_value, i) => ((i - 3) % 4 === 0));
+      });
+    
+      regl({ framebuffer: lookup2.framebuffer })(() => {
+        let pixels = regl.read({
+          x: 0,
+          y: 0,
+          width: FEATID_LIMIT,
+          height: 1,
+          data: new Uint8Array(4 * FEATID_LIMIT),
+        });
+
+        // Only test Alpha values
+        found2 = pixels.filter((value, i) => ((i - 3) % 4 === 0) && value === 255).length;
       });
 
-      // Only test Alpha values
-      found1 = pixels.filter((value, i) => ((i - 3) % 4 === 0) && value === 255).length;
-    });
-   
-    regl({ framebuffer: lookup2.framebuffer })(() => {
-      let pixels = regl.read({
-        x: 0,
-        y: 0,
-        width: FEATID_LIMIT,
-        height: 1,
-        data: new Uint8Array(4 * FEATID_LIMIT),
-      });
 
-      // Only test Alpha values
-      found2 = pixels.filter((value, i) => ((i - 3) % 4 === 0) && value === 255).length;
-    });
-
-    if(lookupInfoDiv) {
-      lookupInfoDiv.innerHTML = `Layer1: ${found1} features<br/>Layer2: ${found2} features`;
+      if(lookupInfoDiv) {
+        lookupInfoDiv.innerHTML = `Layer1: ${found1} features<br/>Layer2: ${found2} features`;
+      }
     }
   };
 

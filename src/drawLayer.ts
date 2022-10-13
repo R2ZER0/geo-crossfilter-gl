@@ -51,7 +51,7 @@ export class LayerGL {
 
     const filterValuesArray = this.geoData.attributes.featids.map(fid => filterValuesMap.get(fid) || 0);
 
-    console.log(filterValuesArray);
+    //console.log(filterValuesArray);
     
     this.drawCommand = regl({
       attributes: {

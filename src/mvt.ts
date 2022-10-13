@@ -51,6 +51,10 @@ const mergePolyTris = (a: PolyData, b: PolyData) => {
   };
 };
 
+const sleep = (milliseconds: number) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
 export const loadMvtData = async (tile_url: string) => {
   const res = await fetch(tile_url);
 
@@ -59,7 +63,9 @@ export const loadMvtData = async (tile_url: string) => {
     return Promise.reject(`Failed to load MVT from URL ${tile_url} response ${res}`);
   }
   
-  const data = await res.body?.getReader().read();
+  const reader = res.body?.getReader();
+  await sleep(250); // There is some strange bug that throws an eror if you read too soon? 
+  const data = await reader?.read();
 
   const pdata = new Protobuf(data?.value);
   const tile = new VectorTile(pdata);

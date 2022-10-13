@@ -5,4 +5,5 @@ export default {
         glslify()
     ],
     assetsInclude: ['**/*.pbf'],
+    base: '', // Use relative paths in build output
 }

@@ -47,7 +47,8 @@ export class LookupGL {
 
         uniforms: {
             overlap: overlapTex, 
-            layer: layerTex, 
+            layer: layerTex,
+            sampleSize: sampleSize,
         },
 
         blend: {
