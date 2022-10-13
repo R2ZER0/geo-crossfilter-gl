@@ -1,7 +1,7 @@
-import { Regl, Texture2D, Framebuffer2D, DrawCommand, DefaultContext } from "regl";
+import { Regl, Texture2D, DrawCommand, DefaultContext } from "regl";
 import shaderCrossfilterVert from "./shaders/drawCrossfilter.vert";
 import shaderCrossfilterFrag from "./shaders/drawCrossfilter.frag";
-import { MvtData, PolyData } from "./mvt";
+import { MvtData } from "./mvt";
 
 
 export type DrawCrossfilterProps = {};
@@ -10,7 +10,7 @@ export class CrossfilterGL {
   regl: Regl;
   drawCommand: DrawCommand<DefaultContext, DrawCrossfilterProps>;
 
-  constructor(regl: Regl, data: MvtData, lookup: Texture2D, sampleSize: number) {
+  constructor(regl: Regl, data: MvtData, lookup: Texture2D) {
     this.regl = regl;
 
     this.drawCommand = regl({

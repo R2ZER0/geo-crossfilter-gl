@@ -6,8 +6,8 @@ varying float v_featid;
 #define FEATID_LIMIT 256.0
 
 void main() {
-  // Convert featid from scale 0..FEATID_LIMIT  to 0.0..1.0
-  float texturePosition = (v_featid / FEATID_LIMIT); // + (0.5 / FEATID_LIMIT);
+  // Convert featid from scale 0..FEATID_LIMIT  to 0.0..1.0 w/ pixel centring
+  float texturePosition = (v_featid + 0.5) / FEATID_LIMIT;
   
   float l = texture2D(lookup, vec2(texturePosition, 0.5)).a;
 

@@ -1,4 +1,4 @@
-import createRegl, { Cancellable, DefaultContext, Regl } from "regl";
+import createRegl, { DefaultContext, Regl } from "regl";
 
 import { loadMvtData, MvtData, MvtFeature } from "./mvt";
 import { LayerGL } from "./drawLayer";
@@ -23,11 +23,11 @@ let initLayer = (regl: Regl, data: MvtData, propName: string) => new LayerGL(reg
   sampleSize: SAMPLE_SIZE,
 });
 
-let rangeMinInput1 = document.getElementById("range-min-1");
-let rangeMaxInput1 = document.getElementById("range-max-1");
+let rangeMinInput1 = document.getElementById("range-min-1") as HTMLInputElement;
+let rangeMaxInput1 = document.getElementById("range-max-1") as HTMLInputElement;
 
-let rangeMinInput2 = document.getElementById("range-min-2");
-let rangeMaxInput2 = document.getElementById("range-max-2");
+let rangeMinInput2 = document.getElementById("range-min-2") as HTMLInputElement;
+let rangeMaxInput2 = document.getElementById("range-max-2") as HTMLInputElement;
 
 const getFilterRanges = () => {
   return {
@@ -119,8 +119,8 @@ const setupCanvasCrossfilter = ({data1, data2}: SetupContext, layer: number) => 
   let lookup1 = new LookupGL(regl, false, layer1.texture, overlap.texture, SAMPLE_SIZE);
   let lookup2 = new LookupGL(regl, false, layer2.texture, overlap.texture, SAMPLE_SIZE);
 
-  let crossfilter1 = new CrossfilterGL(regl, data1, lookup1.texture, SAMPLE_SIZE);
-  let crossfilter2 = new CrossfilterGL(regl, data2, lookup2.texture, SAMPLE_SIZE);
+  let crossfilter1 = new CrossfilterGL(regl, data1, lookup1.texture);
+  let crossfilter2 = new CrossfilterGL(regl, data2, lookup2.texture);
 
   const lookupInfoDiv = document.getElementById('lookup-info');
 
@@ -170,7 +170,6 @@ const setupCanvasCrossfilter = ({data1, data2}: SetupContext, layer: number) => 
 
         // Only test Alpha values
         found1 = pixels.filter((value, i) => ((i - 3) % 4 === 0) && value === 255).length;
-        window._features1 = pixels; //.filter((_value, i) => ((i - 3) % 4 === 0));
       });
     
       regl({ framebuffer: lookup2.framebuffer })(() => {

@@ -47,7 +47,7 @@
               :value="max"
             />
 
-            <span x-text="`Households ${min} to ${max}`"></span>
+            <span x-text="`Layer 1: Households ${min} to ${max}`"></span>
 
             <div
               class="flex items-center relative rounded bg-gray-300 w-40 h-2 mt-4"
@@ -142,7 +142,7 @@
             />
 
             <span
-              x-text="`Households with Children in Poverty ${min} to ${max}`"
+              x-text="`Layer 2: Households with Children in Poverty ${min} to ${max}`"
             ></span>
 
             <div
@@ -172,6 +172,20 @@
             <!-- end range slider -->
           </div>
           <div id="lookup-info"></div>
+          <div id="info">
+            <h1>Info</h1>
+            <p>Top Left: Layer 1 with simple filter.</p>
+            <p>Top Middle: Layer 2 with simple filter.</p>
+            <p>Top Right: Pixel-sampled overlap of filtered Layers 1 + 2.</p>
+            <p>Bottom Left: Layer 1 crossfiltered against Layer 2 based on geometry overlap.</p>
+            <p>Bottom Right: Layer 2 crossfiltered against Layer 1 based on geometry overlap.</p>
+            <p>
+              This demonstrates one possible way of cross-filtering two datasets with different geometries.
+              The top-left two canvases show the two layers with just a simple sliding-range filter, and the
+              bottom two canvases show the same two layers with an additional cross filter test (intersection):
+              each feature of layer A must overlap with at least one feature of at least one other layer.
+            </p>
+          </div>
         </div>
       </div>
     </div>

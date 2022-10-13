@@ -1,9 +1,6 @@
-import Point from "@mapbox/point-geometry";
 import { VectorTile } from "@mapbox/vector-tile";
 import { Triangulator } from "pnltri";
 import Protobuf from "pbf";
-
-import tile1_url from "./data/benefits_8_124_83.pbf";
 
 export type PolyData = {
   vertices: Float32Array,
@@ -13,8 +10,8 @@ export type PolyData = {
 
 export const EMPTY_POLYDATA: PolyData = {
     vertices: new Float32Array(),
-    featids: new Float32Array(),
     triangles: new Uint32Array(),
+    featids: new Float32Array(),
 };
 
 export type MvtFeature = {
@@ -87,8 +84,8 @@ export const loadMvtData = async (tile_url: string) => {
         const triangList: number[][] = triangulator.triangulate_polygon([poly_points]);
         let poly: PolyData = {
             "vertices": new Float32Array(poly_points.map(p => [p.x, p.y]).flat()),
-            "triangles": new Float32Array(triangList.flat()),
-            "featids": new Uint32Array(poly_points.length).fill(featId),
+            "featids": new Float32Array(poly_points.length).fill(featId),
+            "triangles": new Uint32Array(triangList.flat()),
         };
         return poly;
     });
